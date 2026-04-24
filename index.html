@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CQP 设计资源库</title>
+    <title>设计资源库</title>
     <style>
         * {
             margin: 0;
@@ -12,85 +12,156 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
             min-height: 100vh;
-            padding: 40px 20px;
+            color: #fff;
+        }
+
+        /* 背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 100, 180, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .container {
             max-width: 1000px;
             margin: 0 auto;
+            padding: 60px 30px;
         }
 
+        /* 头部 */
         header {
             text-align: center;
             margin-bottom: 50px;
-            color: white;
         }
 
         h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .tagline {
+            color: rgba(255,255,255,0.5);
+            font-size: 1rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
         /* 搜索框 */
-        .search-box {
-            margin-bottom: 40px;
+        .search-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 50px;
         }
 
         .search-input {
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            display: block;
-            padding: 18px 25px;
+            padding: 20px 60px 20px 30px;
             font-size: 1.1rem;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: #fff;
             outline: none;
-            transition: box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .search-input:focus {
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 0 30px rgba(167, 139, 250, 0.2);
         }
 
         .search-input::placeholder {
-            color: #999;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            opacity: 0.5;
+        }
+
+        /* 统计卡片 */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 25px 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* 文件列表 */
         .file-list {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .file-item {
+        .file-card {
             display: flex;
             align-items: center;
-            padding: 20px 25px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.2s ease;
-            gap: 20px;
+            gap: 24px;
+            padding: 24px 28px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            transition: all 0.3s ease;
         }
 
-        .file-item:last-child {
-            border-bottom: none;
-        }
-
-        .file-item:hover {
-            background: #f8f9fa;
+        .file-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(167, 139, 250, 0.3);
+            transform: translateX(5px);
         }
 
         .file-icon {
@@ -98,7 +169,7 @@
             flex-shrink: 0;
         }
 
-        .file-info {
+        .file-content {
             flex: 1;
             min-width: 0;
         }
@@ -106,8 +177,8 @@
         .file-name {
             font-size: 1.1rem;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            color: #fff;
+            margin-bottom: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -115,37 +186,51 @@
 
         .file-meta {
             display: flex;
+            align-items: center;
             gap: 15px;
-            font-size: 0.85rem;
-            color: #888;
+            flex-wrap: wrap;
         }
 
         .file-tag {
-            display: inline-block;
-            padding: 3px 10px;
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
         }
 
         .tag-pdf {
-            background: #ffebee;
-            color: #c62828;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
         }
 
         .tag-image {
-            background: #e3f2fd;
-            color: #1565c0;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
         }
 
         .tag-doc {
-            background: #fff3e0;
-            color: #e65100;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
         }
 
         .tag-other {
-            background: #f3e5f5;
-            color: #7b1fa2;
+            background: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
+        }
+
+        .meta-text {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .file-thumb {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
         }
 
         .file-actions {
@@ -155,8 +240,8 @@
         }
 
         .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
             font-weight: 600;
             font-size: 0.9rem;
             text-decoration: none;
@@ -167,37 +252,31 @@
         }
 
         .btn-download {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #7c3aed, #db2777);
             color: white;
+            border: none;
         }
 
         .btn-download:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
         }
 
         .btn-preview {
-            background: #f8f9fa;
-            color: #333;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .btn-preview:hover {
-            background: #e9ecef;
-        }
-
-        /* 预览图片 */
-        .preview-thumb {
-            width: 100%;
-            max-width: 300px;
-            border-radius: 8px;
-            margin-top: 10px;
+            background: rgba(255,255,255,0.1);
         }
 
         /* 无结果 */
         .no-results {
             text-align: center;
-            padding: 60px 20px;
-            color: #888;
+            padding: 80px 20px;
+            color: rgba(255,255,255,0.3);
         }
 
         .no-results-icon {
@@ -205,45 +284,57 @@
             margin-bottom: 20px;
         }
 
-        /* 统计 */
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
+        /* 页脚 */
         footer {
             text-align: center;
-            margin-top: 50px;
-            color: white;
-            opacity: 0.8;
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.3);
+            font-size: 0.9rem;
         }
 
+        footer a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #a78bfa;
+        }
+
+        /* 响应式 */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
+            .container {
+                padding: 40px 20px;
             }
 
-            .file-item {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .stat-card {
+                width: 100%;
+                max-width: 280px;
+                padding: 20px;
+            }
+
+            .file-card {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
+            }
+
+            .file-thumb {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 16/9;
             }
 
             .file-actions {
@@ -254,56 +345,49 @@
                 flex: 1;
                 justify-content: center;
             }
-
-            .file-meta {
-                flex-wrap: wrap;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📚 CQP 设计资源库</h1>
-            <p class="subtitle">专业产品手册与设计文档下载中心</p>
+            <h1>设计资源库</h1>
+            <p class="tagline">Design Resource Center</p>
         </header>
 
         <div class="stats">
-            <div class="stat-item">
+            <div class="stat-card">
                 <div class="stat-number" id="totalCount">0</div>
                 <div class="stat-label">全部资源</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card">
                 <div class="stat-number" id="pdfCount">0</div>
                 <div class="stat-label">PDF 文档</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card">
                 <div class="stat-number" id="imageCount">0</div>
                 <div class="stat-label">图片素材</div>
             </div>
         </div>
 
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 输入关键词搜索文件...">
+        <div class="search-wrapper">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索文件...">
+            <span class="search-icon">🔍</span>
         </div>
 
-        <div class="file-list" id="fileList">
-            <!-- 文件列表由 JavaScript 动态生成 -->
-        </div>
+        <div class="file-list" id="fileList"></div>
 
         <div class="no-results" id="noResults" style="display: none;">
-            <div class="no-results-icon">🔍</div>
+            <div class="no-results-icon">📭</div>
             <p>没有找到匹配的文件</p>
         </div>
 
         <footer>
-            <p>📧 联系邮箱: 1443890059@qq.com</p>
-            <p style="margin-top: 10px;">© 2026 CQP 设计资源库</p>
+            <p>📧 <a href="mailto:1443890059@qq.com">1443890059@qq.com</a></p>
         </footer>
     </div>
 
     <script>
-        // 文件数据 - 每次上传新文件后更新这里
         const files = [
             {
                 name: "GD28系列灵巧型通用变频器产品手册（中文）",
@@ -333,27 +417,14 @@
         const pdfCount = document.getElementById('pdfCount');
         const imageCount = document.getElementById('imageCount');
 
-        // 获取文件图标
         function getFileIcon(type) {
-            switch(type) {
-                case 'pdf': return '📘';
-                case 'image': return '🖼️';
-                case 'doc': return '📄';
-                default: return '📎';
-            }
+            return type === 'pdf' ? '📘' : type === 'image' ? '🖼️' : '📎';
         }
 
-        // 获取标签样式
         function getTagClass(type) {
-            switch(type) {
-                case 'pdf': return 'tag-pdf';
-                case 'image': return 'tag-image';
-                case 'doc': return 'tag-doc';
-                default: return 'tag-other';
-            }
+            return 'tag-' + type;
         }
 
-        // 渲染文件列表
         function renderFiles(filter = '') {
             const filtered = files.filter(f => 
                 f.name.toLowerCase().includes(filter.toLowerCase()) ||
@@ -366,46 +437,37 @@
                 return;
             }
 
-            fileList.style.display = 'block';
+            fileList.style.display = 'flex';
             noResults.style.display = 'none';
 
             fileList.innerHTML = filtered.map(f => `
-                <div class="file-item">
+                <div class="file-card">
                     <div class="file-icon">${getFileIcon(f.type)}</div>
-                    <div class="file-info">
+                    <div class="file-content">
                         <div class="file-name">${f.name}</div>
                         <div class="file-meta">
                             <span class="file-tag ${getTagClass(f.type)}">${f.tag}</span>
-                            <span>📅 ${f.date}</span>
-                            <span>📦 ${f.size}</span>
+                            <span class="meta-text">📅 ${f.date}</span>
+                            <span class="meta-text">📦 ${f.size}</span>
                         </div>
-                        ${f.thumb ? `<img src="${f.thumb}" alt="${f.name}" class="preview-thumb" loading="lazy">` : ''}
                     </div>
+                    ${f.thumb ? `<img src="${f.thumb}" alt="${f.name}" class="file-thumb">` : ''}
                     <div class="file-actions">
-                        <a href="${f.download}" class="btn btn-download" download>
-                            ⬇️ 下载
-                        </a>
-                        <a href="${f.preview}" class="btn btn-preview" target="_blank">
-                            👁️ 预览
-                        </a>
+                        <a href="${f.download}" class="btn btn-download" download>⬇️ 下载</a>
+                        <a href="${f.preview}" class="btn btn-preview" target="_blank">👁️ 预览</a>
                     </div>
                 </div>
             `).join('');
         }
 
-        // 更新统计
         function updateStats() {
             totalCount.textContent = files.length;
             pdfCount.textContent = files.filter(f => f.type === 'pdf').length;
             imageCount.textContent = files.filter(f => f.type === 'image').length;
         }
 
-        // 搜索功能
-        searchInput.addEventListener('input', (e) => {
-            renderFiles(e.target.value);
-        });
+        searchInput.addEventListener('input', (e) => renderFiles(e.target.value));
 
-        // 初始化
         updateStats();
         renderFiles();
     </script>
