@@ -369,9 +369,11 @@
 
         .preview-body {
             overflow: auto;
-            max-height: 70vh;
             background: #f8fafc;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f1f5f9;
         }
@@ -403,14 +405,11 @@
         }
 
         .preview-image {
-            transition: width 0.2s ease, height 0.2s ease;
+            transition: max-width 0.2s ease, width 0.2s ease;
             display: block;
             background: #f8fafc;
             max-width: 100%;
-            max-height: calc(70vh - 40px);
-            width: auto;
-            height: auto;
-            object-fit: contain;
+            cursor: zoom-in;
         }
 
         .preview-pdf {
@@ -490,7 +489,7 @@
             }
 
             .preview-body {
-                max-height: 50vh;
+                max-height: 60vh;
             }
         }
     </style>
@@ -593,43 +592,64 @@
             return 'tag-' + type;
         }
 
-        // 图片缩放功能（基于宽高，而非 transform）
-        function setZoom(img, scale) {
-            const originalWidth = parseFloat(img.dataset.originalWidth);
-            const originalHeight = parseFloat(img.dataset.originalHeight);
-            if (!originalWidth || !originalHeight) return;
-            const maxW = img.closest('.preview-body').clientWidth - 40;
-            const maxH = parseInt(getComputedStyle(img.closest('.preview-body')).maxHeight) - 40;
-            const baseW = Math.min(originalWidth, maxW);
-            const baseH = Math.min(originalHeight, maxH);
-            img.style.width = (baseW * scale) + 'px';
+        // 图片缩放功能（点击图片放大，+/-按钮控制缩放）
+        function fitImage(img) {
+            // 计算初始适配尺寸：图片完整显示在容器内
+            const body = img.closest('.preview-body');
+            const maxW = body.clientWidth - 40;
+            const maxH = parseInt(getComputedStyle(body).maxHeight) || body.clientHeight;
+            const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
+            const imgH = parseFloat(img.dataset.originalHeight) || img.naturalHeight;
+            if (!imgW || !imgH) return 1;
+            // 计算刚好容纳图片的缩放比例
+            const scaleW = maxW / imgW;
+            const scaleH = (maxH - 40) / imgH;
+            const fitScale = Math.min(scaleW, scaleH, 1); // 不超过100%
+            img.dataset.fitScale = fitScale;
+            return fitScale;
+        }
+
+        function setZoom(img, level) {
+            const fitScale = parseFloat(img.dataset.fitScale) || 1;
+            const targetScale = fitScale * level;
+            const body = img.closest('.preview-body');
+            const maxW = body.clientWidth - 40;
+            const maxH = parseInt(getComputedStyle(body).maxHeight) || body.clientHeight;
+            const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
+            const displayW = imgW * targetScale;
+            img.style.maxWidth = displayW + 'px';
+            img.style.width = (displayW > maxW ? maxW : displayW) + 'px';
             img.style.height = 'auto';
         }
 
         function zoomIn(img) {
-            const current = parseFloat(img.dataset.scale || 1);
-            const next = Math.min(current + 0.25, 3);
-            img.dataset.scale = next;
+            const current = parseFloat(img.dataset.zoomLevel || 1);
+            const next = Math.min(current + 0.5, 4);
+            img.dataset.zoomLevel = next;
             setZoom(img, next);
             updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
         }
 
         function zoomOut(img) {
-            const current = parseFloat(img.dataset.scale || 1);
-            const next = Math.max(current - 0.25, 0.5);
-            img.dataset.scale = next;
+            const current = parseFloat(img.dataset.zoomLevel || 1);
+            const next = Math.max(current - 0.5, 0.5);
+            img.dataset.zoomLevel = next;
             setZoom(img, next);
             updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
         }
 
         function zoomReset(img) {
-            img.dataset.scale = 1;
-            img.style.width = 'auto';
+            img.dataset.zoomLevel = 1;
+            setZoom(img, 1);
             updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), 1);
         }
 
-        function updateZoomDisplay(el, scale) {
-            el.textContent = Math.round(scale * 100) + '%';
+        function updateZoomDisplay(el, level) {
+            if (level === 1) {
+                el.textContent = '适应';
+            } else {
+                el.textContent = Math.round(level * 100) + '%';
+            }
         }
 
         function togglePreview(file, btnEl) {
@@ -666,7 +686,7 @@
                         <div class="preview-controls">
                             <div class="zoom-controls">
                                 <button class="zoom-btn" onclick="zoomOut(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="缩小">−</button>
-                                <span class="zoom-level">100%</span>
+                                <span class="zoom-level">适应</span>
                                 <button class="zoom-btn" onclick="zoomIn(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="放大">+</button>
                                 <button class="zoom-btn" onclick="zoomReset(this.closest('.preview-body').querySelector('.preview-image'))" title="重置" style="font-size:0.75rem;">↺</button>
                             </div>
@@ -675,39 +695,44 @@
                     </div>
                     <div class="preview-body">
                         <div class="preview-image-wrapper">
-                            <img src="${file.preview}" alt="${file.name}" class="preview-image" data-scale="1" onclick="zoomReset(this)">
+                            <img src="${file.preview}" alt="${file.name}" class="preview-image" data-scale="1" onclick="zoomIn(this)">
                         </div>
                     </div>
                 `;
                 // 给缩放按钮绑定正确的图片引用
                 const zoomBtns = container.querySelectorAll('.zoom-btn');
                 const img = container.querySelector('.preview-image');
+                const body = container.querySelector('.preview-body');
                 zoomBtns[0].onclick = () => zoomOut(img);
                 zoomBtns[1].onclick = () => zoomIn(img);
                 zoomBtns[2].onclick = () => zoomReset(img);
 
-                // 图片加载后记录原始尺寸
+                // 图片加载后计算初始适配尺寸
                 img.onload = function() {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
-                    img.dataset.scale = '1';
+                    img.dataset.zoomLevel = '1';
+                    fitImage(img);
+                    setZoom(img, 1);
+                    img.style.cursor = 'zoom-in';
                 };
                 // 如果图片已经缓存，直接读取
                 if (img.complete && img.naturalWidth) {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
-                    img.dataset.scale = '1';
+                    img.dataset.zoomLevel = '1';
+                    fitImage(img);
+                    setZoom(img, 1);
+                    img.style.cursor = 'zoom-in';
                 }
 
                 // 鼠标滚轮缩放
-                const body = container.querySelector('.preview-body');
                 body.addEventListener('wheel', (e) => {
                     e.preventDefault();
-                    const img = body.querySelector('.preview-image');
-                    const current = parseFloat(img.dataset.scale || 1);
-                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-                    const next = Math.max(0.5, Math.min(3, current + delta));
-                    img.dataset.scale = next;
+                    const current = parseFloat(img.dataset.zoomLevel || 1);
+                    const delta = e.deltaY > 0 ? -0.5 : 0.5;
+                    const next = Math.max(0.5, Math.min(4, current + delta));
+                    img.dataset.zoomLevel = next;
                     setZoom(img, next);
                     updateZoomDisplay(body.querySelector('.zoom-level'), next);
                 });
