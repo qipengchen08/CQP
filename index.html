@@ -364,6 +364,10 @@
             height: 52px;
         }
 
+        .preview-footer.hidden {
+            display: none;
+        }
+
         .btn-close-preview {
             background: none;
             border: none;
@@ -382,35 +386,83 @@
         }
 
         .preview-body {
-            overflow-y: scroll;
-            overflow-x: hidden;
-            background: #1e293b;
+            overflow: hidden;
+            background: #f1f5f9;
             position: relative;
             height: calc(70vh - 52px - 52px);
+            display: flex;
         }
 
-        .preview-body::-webkit-scrollbar {
-            width: 20px;
+        /* 左侧图片滚动区域 */
+        .preview-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            background: #f1f5f9;
+            cursor: grab;
         }
 
-        .preview-body::-webkit-scrollbar-track {
-            background: #dc2626;
-            border-radius: 10px;
+        .preview-scroll-area:active {
+            cursor: grabbing;
         }
 
-        .preview-body::-webkit-scrollbar-thumb {
-            background: #0ea5e9;
-            border-radius: 10px;
-            border: 3px solid #dc2626;
+        .preview-scroll-area::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .preview-body::-webkit-scrollbar-thumb:hover {
-            background: #38bdf8;
+        .preview-scroll-area::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .preview-scroll-area::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+
+        .preview-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* 右侧缩放控制区域 */
+        .preview-zoom-area {
+            width: 60px;
+            background: linear-gradient(180deg, #fee2e2 0%, #fecaca 50%, #fee2e2 100%);
+            border-left: 3px solid #dc2626;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: ns-resize;
+            position: relative;
+        }
+
+        .preview-zoom-area::before {
+            content: '🔍';
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .preview-zoom-area::after {
+            content: '↕';
+            font-size: 20px;
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 12px;
+            color: #991b1b;
+            font-weight: 600;
+            letter-spacing: 2px;
         }
 
         .preview-image-wrapper {
             display: block;
-            padding: 20px;
             text-align: center;
         }
 
@@ -500,6 +552,10 @@
 
             .preview-body {
                 height: calc(55vh - 52px - 52px) !important;
+            }
+
+            .preview-zoom-area {
+                width: 40px;
             }
         }
     </style>
@@ -604,9 +660,9 @@
 
         // 图片缩放功能（点击图片放大，+/-按钮控制缩放）
         function fitImage(img) {
-            const body = img.closest('.preview-body');
-            const maxW = body.clientWidth - 40;
-            const maxH = body.clientHeight - 40;
+            const scrollArea = img.closest('.preview-scroll-area');
+            const maxW = scrollArea.clientWidth - 40;
+            const maxH = scrollArea.clientHeight - 40;
             const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
             const imgH = parseFloat(img.dataset.originalHeight) || img.naturalHeight;
             if (!imgW || !imgH) return 1;
@@ -620,9 +676,8 @@
         function setZoom(img, level) {
             const fitScale = parseFloat(img.dataset.fitScale) || 1;
             const targetScale = fitScale * level;
-            const body = img.closest('.preview-body');
-            const maxW = body.clientWidth - 40;
-            const maxH = body.clientHeight - 40;
+            const scrollArea = img.closest('.preview-scroll-area');
+            const maxW = scrollArea.clientWidth - 40;
             const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
             const displayW = imgW * targetScale;
             img.style.maxWidth = displayW + 'px';
@@ -632,32 +687,27 @@
 
         function zoomIn(img) {
             const current = parseFloat(img.dataset.zoomLevel || 2);
-            const next = Math.min(current + 0.5, 4);
+            const next = Math.min(current + 0.25, 4);
             img.dataset.zoomLevel = next;
             setZoom(img, next);
-            const el = img.closest('.preview-body').querySelector('.zoom-level');
-            el.textContent = Math.round((next / 2) * 100) + '%';
         }
 
         function zoomOut(img) {
             const current = parseFloat(img.dataset.zoomLevel || 2);
-            const next = Math.max(current - 0.5, 1);
+            const next = Math.max(current - 0.25, 0.5);
             img.dataset.zoomLevel = next;
             setZoom(img, next);
-            const el = img.closest('.preview-body').querySelector('.zoom-level');
-            el.textContent = Math.round((next / 2) * 100) + '%';
         }
 
         function zoomReset(img) {
-            img.dataset.zoomLevel = 2;
+            img.dataset.zoomLevel = '2';
             fitImage(img);
             setZoom(img, 2);
-            const el = img.closest('.preview-body').querySelector('.zoom-level');
-            el.textContent = '100%';
         }
 
         function updateZoomDisplay(el, level) {
-            if (level === 1) {
+            if (typeof level === 'string') level = parseFloat(level);
+            if (level <= 1.5) {
                 el.textContent = '适应';
             } else {
                 el.textContent = Math.round(level * 100) + '%';
@@ -698,11 +748,16 @@
                         <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
                     </div>
                     <div class="preview-body">
-                        <div class="preview-image-wrapper">
-                            <img src="${file.preview}" alt="${file.name}" class="preview-image" data-zoomed="false">
+                        <div class="preview-scroll-area">
+                            <div class="preview-image-wrapper">
+                                <img src="${file.preview}" alt="${file.name}" class="preview-image">
+                            </div>
+                        </div>
+                        <div class="preview-zoom-area" title="在此区域滚动鼠标滚轮可缩放图片">
+                            <span class="zoom-hint">滚轮缩放</span>
                         </div>
                     </div>
-                    <div class="preview-footer" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none;">
+                    <div class="preview-footer">
                         <div class="zoom-controls">
                             <button class="zoom-btn" title="缩小">🔍−</button>
                             <span class="zoom-level">100%</span>
@@ -711,57 +766,97 @@
                         </div>
                     </div>
                 `;
-                // 绑定缩放按钮事件
                 const zoomBtns = container.querySelectorAll('.zoom-btn');
                 const img = container.querySelector('.preview-image');
-                const body = container.querySelector('.preview-body');
-                const previewFooter = container.querySelector('.preview-footer');
+                const scrollArea = container.querySelector('.preview-scroll-area');
+                const zoomArea = container.querySelector('.preview-zoom-area');
                 const zoomLevel = container.querySelector('.zoom-level');
-                zoomBtns[0].onclick = () => zoomOut(img);
-                zoomBtns[1].onclick = () => zoomIn(img);
-                zoomBtns[2].onclick = () => zoomReset(img);
 
-                // 图片加载后记录原始尺寸
+                // 缩放按钮
+                zoomBtns[0].onclick = () => { zoomOut(img); updateZoomDisplay(zoomLevel, img.dataset.zoomLevel); };
+                zoomBtns[1].onclick = () => { zoomIn(img); updateZoomDisplay(zoomLevel, img.dataset.zoomLevel); };
+                zoomBtns[2].onclick = () => { zoomReset(img); updateZoomDisplay(zoomLevel, '2'); };
+
+                // 图片加载后初始化
                 img.onload = function() {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
-                    img.dataset.zoomLevel = '1';
+                    img.dataset.zoomLevel = '2';
                     fitImage(img);
-                    setZoom(img, 1);
-                    img.style.cursor = 'zoom-in';
+                    setZoom(img, 2);
+                    updateZoomDisplay(zoomLevel, '2');
+                    img.style.cursor = 'grab';
+                    scrollArea.scrollTop = 0;
                 };
                 if (img.complete && img.naturalWidth) {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
-                    img.dataset.zoomLevel = '1';
-                    fitImage(img);
-                    setZoom(img, 1);
-                    img.style.cursor = 'zoom-in';
-                }
-
-                // 点击图片：进入放大模式，显示控制条
-                img.addEventListener('click', function() {
-                    if (img.dataset.zoomed === 'true') return;
-                    img.dataset.zoomed = 'true';
                     img.dataset.zoomLevel = '2';
                     fitImage(img);
                     setZoom(img, 2);
-                    previewFooter.style.display = 'flex';
-                    zoomLevel.textContent = '100%';
-                    img.style.cursor = 'zoom-out';
-                    body.scrollTop = 0;
-                });
+                    updateZoomDisplay(zoomLevel, '2');
+                    img.style.cursor = 'grab';
+                    scrollArea.scrollTop = 0;
+                }
 
-                // 鼠标滚轮缩放（仅在放大模式下生效）
-                body.addEventListener('wheel', (e) => {
-                    if (img.dataset.zoomed !== 'true') return;
+                // 右侧红色区域：滚轮缩放
+                zoomArea.addEventListener('wheel', (e) => {
                     e.preventDefault();
                     const current = parseFloat(img.dataset.zoomLevel || 2);
-                    const delta = e.deltaY > 0 ? -0.5 : 0.5;
-                    const next = Math.max(1, Math.min(4, current + delta));
+                    const delta = e.deltaY > 0 ? -0.25 : 0.25;
+                    const next = Math.max(0.5, Math.min(4, current + delta));
                     img.dataset.zoomLevel = next;
                     setZoom(img, next);
-                    zoomLevel.textContent = Math.round((next / 2) * 100) + '%';
+                    updateZoomDisplay(zoomLevel, next);
+                });
+
+                // 左侧区域：拖拽滚动
+                let isDragging = false;
+                let startY = 0;
+                let scrollTop = 0;
+
+                scrollArea.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startY = e.pageY;
+                    scrollTop = scrollArea.scrollTop;
+                    img.style.cursor = 'grabbing';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    const delta = startY - e.pageY;
+                    scrollArea.scrollTop = scrollTop + delta;
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        img.style.cursor = 'grab';
+                    }
+                });
+
+                // 左侧滚轮也支持滚动（备用）
+                scrollArea.addEventListener('wheel', (e) => {
+                    e.stopPropagation();
+                });
+
+                // 点击图片：切换缩放（从 fit 切换到 100%）
+                img.addEventListener('click', function() {
+                    const current = parseFloat(img.dataset.zoomLevel || 2);
+                    if (current >= 2.5) {
+                        // 已经放大，缩小回适应
+                        img.dataset.zoomLevel = '1.5';
+                        fitImage(img);
+                        setZoom(img, 1.5);
+                        updateZoomDisplay(zoomLevel, 1.5);
+                    } else {
+                        // 放大到 100%
+                        img.dataset.zoomLevel = '2';
+                        setZoom(img, 2);
+                        updateZoomDisplay(zoomLevel, '2');
+                    }
+                    scrollArea.scrollTop = 0;
                 });
             } else if (file.type === 'pdf') {
                 container.innerHTML = `
