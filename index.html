@@ -169,9 +169,28 @@
             transform: translateY(-2px);
         }
 
-        .file-icon {
-            font-size: 2.5rem;
+        .file-thumb {
+            width: 100px;
+            height: 70px;
+            border-radius: 10px;
+            overflow: hidden;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+        }
+
+        .file-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .file-thumb .thumb-pdf {
+            font-size: 2rem;
         }
 
         .file-content {
@@ -1082,7 +1101,12 @@ function goCategory(catKey) {
 
     list.innerHTML = catFiles.map(f => `
         <div class="file-card">
-            <span class="file-icon">${f.type === 'pdf' ? '📘' : '🖼️'}</span>
+            <div class="file-thumb">
+                ${f.type === 'pdf'
+                    ? '<span class="thumb-pdf">📘</span>'
+                    : `<img src="${f.preview}" alt="${f.name}" loading="lazy" onclick="openPreview(${JSON.stringify(f).replace(/"/g, '&quot;')})" style="cursor:pointer;" title="点击预览">`
+                }
+            </div>
             <div class="file-content">
                 <div class="file-name" title="${f.name}">${f.name}</div>
                 <div class="file-meta">
