@@ -397,10 +397,13 @@
         .preview-scroll-area {
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
             padding: 20px;
             background: #f1f5f9;
             cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .preview-scroll-area:active {
@@ -425,40 +428,9 @@
             background: #64748b;
         }
 
-        /* 右侧缩放控制区域 */
+        /* 右侧缩放控制区域 - 已隐藏，功能移至底部按钮 */
         .preview-zoom-area {
-            width: 60px;
-            background: linear-gradient(180deg, #fee2e2 0%, #fecaca 50%, #fee2e2 100%);
-            border-left: 3px solid #dc2626;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: ns-resize;
-            position: relative;
-        }
-
-        .preview-zoom-area::before {
-            content: '🔍';
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .preview-zoom-area::after {
-            content: '↕';
-            font-size: 20px;
-            color: #dc2626;
-            font-weight: bold;
-        }
-
-        .zoom-hint {
-            position: absolute;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            font-size: 12px;
-            color: #991b1b;
-            font-weight: 600;
-            letter-spacing: 2px;
+            display: none;
         }
 
         .preview-image-wrapper {
@@ -554,9 +526,7 @@
                 height: calc(55vh - 52px - 52px) !important;
             }
 
-            .preview-zoom-area {
-                width: 40px;
-            }
+
         }
     </style>
 </head>
@@ -753,9 +723,6 @@
                                 <img src="${file.preview}" alt="${file.name}" class="preview-image">
                             </div>
                         </div>
-                        <div class="preview-zoom-area" title="在此区域滚动鼠标滚轮可缩放图片">
-                            <span class="zoom-hint">滚轮缩放</span>
-                        </div>
                     </div>
                     <div class="preview-footer">
                         <div class="zoom-controls">
@@ -769,7 +736,6 @@
                 const zoomBtns = container.querySelectorAll('.zoom-btn');
                 const img = container.querySelector('.preview-image');
                 const scrollArea = container.querySelector('.preview-scroll-area');
-                const zoomArea = container.querySelector('.preview-zoom-area');
                 const zoomLevel = container.querySelector('.zoom-level');
 
                 // 缩放按钮
@@ -798,17 +764,6 @@
                     img.style.cursor = 'grab';
                     scrollArea.scrollTop = 0;
                 }
-
-                // 右侧红色区域：滚轮缩放
-                zoomArea.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    const current = parseFloat(img.dataset.zoomLevel || 2);
-                    const delta = e.deltaY > 0 ? -0.25 : 0.25;
-                    const next = Math.max(0.5, Math.min(4, current + delta));
-                    img.dataset.zoomLevel = next;
-                    setZoom(img, next);
-                    updateZoomDisplay(zoomLevel, next);
-                });
 
                 // 左侧区域：拖拽滚动
                 let isDragging = false;
