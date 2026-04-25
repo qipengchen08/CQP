@@ -352,6 +352,14 @@
             font-weight: 800;
         }
 
+        .preview-footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
         .btn-close-preview {
             background: none;
             border: none;
@@ -689,19 +697,19 @@
                 container.innerHTML = `
                     <div class="preview-header">
                         <span class="preview-title">${file.name}</span>
-                        <div class="preview-controls">
-                            <div class="zoom-controls" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none; gap:12px;">
-                                <button class="zoom-btn" title="缩小">🔍−</button>
-                                <span class="zoom-level">100%</span>
-                                <button class="zoom-btn" title="放大">🔍+</button>
-                                <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺ 适应</button>
-                            </div>
-                            <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
-                        </div>
+                        <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
                     </div>
                     <div class="preview-body">
                         <div class="preview-image-wrapper">
                             <img src="${file.preview}" alt="${file.name}" class="preview-image" data-zoomed="false">
+                        </div>
+                    </div>
+                    <div class="preview-footer" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none;">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" title="缩小">🔍−</button>
+                            <span class="zoom-level">100%</span>
+                            <button class="zoom-btn" title="放大">🔍+</button>
+                            <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺ 适应</button>
                         </div>
                     </div>
                 `;
@@ -709,7 +717,7 @@
                 const zoomBtns = container.querySelectorAll('.zoom-btn');
                 const img = container.querySelector('.preview-image');
                 const body = container.querySelector('.preview-body');
-                const zoomControls = container.querySelector('.zoom-controls');
+                const previewFooter = container.querySelector('.preview-footer');
                 const zoomLevel = container.querySelector('.zoom-level');
                 zoomBtns[0].onclick = () => zoomOut(img);
                 zoomBtns[1].onclick = () => zoomIn(img);
@@ -740,7 +748,7 @@
                     img.dataset.zoomLevel = '2';
                     fitImage(img);
                     setZoom(img, 2);
-                    zoomControls.style.display = 'flex';
+                    previewFooter.style.display = 'flex';
                     zoomLevel.textContent = '100%';
                     body.style.maxHeight = '85vh';
                     img.style.cursor = 'zoom-out';
