@@ -318,22 +318,24 @@
         .zoom-controls {
             display: flex;
             align-items: center;
-            gap: 4px;
-            background: #f1f5f9;
-            padding: 4px 8px;
-            border-radius: 8px;
+            gap: 8px;
+            background: #e0f2fe;
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(2, 132, 199, 0.3);
         }
 
         .zoom-btn {
             background: white;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #0284c7;
             border-radius: 6px;
-            padding: 6px 10px;
+            padding: 6px 14px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s;
-            color: #475569;
+            color: #0284c7;
             line-height: 1;
+            font-weight: 700;
         }
 
         .zoom-btn:hover {
@@ -343,11 +345,11 @@
         }
 
         .zoom-level {
-            font-size: 0.8rem;
-            color: #64748b;
-            min-width: 45px;
+            font-size: 0.9rem;
+            color: #0284c7;
+            min-width: 55px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 800;
         }
 
         .btn-close-preview {
@@ -688,11 +690,11 @@
                     <div class="preview-header">
                         <span class="preview-title">${file.name}</span>
                         <div class="preview-controls">
-                            <div class="zoom-controls" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none;">
-                                <button class="zoom-btn" title="缩小">−</button>
+                            <div class="zoom-controls" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none; gap:12px;">
+                                <button class="zoom-btn" title="缩小">🔍−</button>
                                 <span class="zoom-level">100%</span>
-                                <button class="zoom-btn" title="放大">+</button>
-                                <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺</button>
+                                <button class="zoom-btn" title="放大">🔍+</button>
+                                <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺ 适应</button>
                             </div>
                             <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
                         </div>
