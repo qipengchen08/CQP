@@ -623,25 +623,29 @@
         }
 
         function zoomIn(img) {
-            const current = parseFloat(img.dataset.zoomLevel || 1);
+            const current = parseFloat(img.dataset.zoomLevel || 2);
             const next = Math.min(current + 0.5, 4);
             img.dataset.zoomLevel = next;
             setZoom(img, next);
-            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
+            const el = img.closest('.preview-body').querySelector('.zoom-level');
+            el.textContent = Math.round((next / 2) * 100) + '%';
         }
 
         function zoomOut(img) {
-            const current = parseFloat(img.dataset.zoomLevel || 1);
-            const next = Math.max(current - 0.5, 0.5);
+            const current = parseFloat(img.dataset.zoomLevel || 2);
+            const next = Math.max(current - 0.5, 1);
             img.dataset.zoomLevel = next;
             setZoom(img, next);
-            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
+            const el = img.closest('.preview-body').querySelector('.zoom-level');
+            el.textContent = Math.round((next / 2) * 100) + '%';
         }
 
         function zoomReset(img) {
-            img.dataset.zoomLevel = 1;
-            setZoom(img, 1);
-            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), 1);
+            img.dataset.zoomLevel = 2;
+            fitImage(img);
+            setZoom(img, 2);
+            const el = img.closest('.preview-body').querySelector('.zoom-level');
+            el.textContent = '100%';
         }
 
         function updateZoomDisplay(el, level) {
@@ -684,30 +688,32 @@
                     <div class="preview-header">
                         <span class="preview-title">${file.name}</span>
                         <div class="preview-controls">
-                            <div class="zoom-controls">
-                                <button class="zoom-btn" onclick="zoomOut(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="缩小">−</button>
-                                <span class="zoom-level">适应</span>
-                                <button class="zoom-btn" onclick="zoomIn(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="放大">+</button>
-                                <button class="zoom-btn" onclick="zoomReset(this.closest('.preview-body').querySelector('.preview-image'))" title="重置" style="font-size:0.75rem;">↺</button>
+                            <div class="zoom-controls" id="zoom-controls-${file.name.replace(/[^a-zA-Z0-9]/g, '')}" style="display:none;">
+                                <button class="zoom-btn" title="缩小">−</button>
+                                <span class="zoom-level">100%</span>
+                                <button class="zoom-btn" title="放大">+</button>
+                                <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺</button>
                             </div>
                             <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
                         </div>
                     </div>
                     <div class="preview-body">
                         <div class="preview-image-wrapper">
-                            <img src="${file.preview}" alt="${file.name}" class="preview-image" data-scale="1" onclick="zoomIn(this)">
+                            <img src="${file.preview}" alt="${file.name}" class="preview-image" data-zoomed="false">
                         </div>
                     </div>
                 `;
-                // 给缩放按钮绑定正确的图片引用
+                // 绑定缩放按钮事件
                 const zoomBtns = container.querySelectorAll('.zoom-btn');
                 const img = container.querySelector('.preview-image');
                 const body = container.querySelector('.preview-body');
+                const zoomControls = container.querySelector('.zoom-controls');
+                const zoomLevel = container.querySelector('.zoom-level');
                 zoomBtns[0].onclick = () => zoomOut(img);
                 zoomBtns[1].onclick = () => zoomIn(img);
                 zoomBtns[2].onclick = () => zoomReset(img);
 
-                // 图片加载后计算初始适配尺寸
+                // 图片加载后记录原始尺寸
                 img.onload = function() {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
@@ -716,7 +722,6 @@
                     setZoom(img, 1);
                     img.style.cursor = 'zoom-in';
                 };
-                // 如果图片已经缓存，直接读取
                 if (img.complete && img.naturalWidth) {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
@@ -726,15 +731,31 @@
                     img.style.cursor = 'zoom-in';
                 }
 
-                // 鼠标滚轮缩放
+                // 点击图片：进入放大模式，显示控制条
+                img.addEventListener('click', function() {
+                    if (img.dataset.zoomed === 'true') return; // 已经在放大模式
+                    img.dataset.zoomed = 'true';
+                    img.dataset.zoomLevel = '2';
+                    fitImage(img);
+                    setZoom(img, 2);
+                    zoomControls.style.display = 'flex';
+                    zoomLevel.textContent = '100%';
+                    body.style.maxHeight = '85vh';
+                    img.style.cursor = 'zoom-out';
+                    // 滚动到图片顶部
+                    body.scrollTop = 0;
+                });
+
+                // 鼠标滚轮缩放（仅在放大模式下生效）
                 body.addEventListener('wheel', (e) => {
+                    if (img.dataset.zoomed !== 'true') return;
                     e.preventDefault();
-                    const current = parseFloat(img.dataset.zoomLevel || 1);
+                    const current = parseFloat(img.dataset.zoomLevel || 2);
                     const delta = e.deltaY > 0 ? -0.5 : 0.5;
-                    const next = Math.max(0.5, Math.min(4, current + delta));
+                    const next = Math.max(1, Math.min(4, current + delta));
                     img.dataset.zoomLevel = next;
                     setZoom(img, next);
-                    updateZoomDisplay(body.querySelector('.zoom-level'), next);
+                    zoomLevel.textContent = Math.round((next / 2) * 100) + '%';
                 });
             } else if (file.type === 'pdf') {
                 container.innerHTML = `
