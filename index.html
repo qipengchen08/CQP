@@ -383,9 +383,9 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            max-height: 85vh;
+            height: 85vh;
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f1f5f9;
+            scrollbar-color: #94a3b8 #e2e8f0;
         }
 
         .preview-body::-webkit-scrollbar {
@@ -415,11 +415,11 @@
 
         .preview-image-wrapper {
             min-height: 0;
-            flex: 1;
+            flex-shrink: 0;
+            width: 100%;
             display: flex;
             justify-content: center;
             padding: 20px;
-            overflow: auto;
         }
 
         .preview-image {
@@ -507,7 +507,7 @@
             }
 
             .preview-body {
-                max-height: 60vh;
+                height: 60vh;
             }
         }
     </style>
@@ -758,7 +758,7 @@
                     setZoom(img, 2);
                     previewFooter.style.display = 'flex';
                     zoomLevel.textContent = '100%';
-                    body.style.maxHeight = '85vh';
+                    body.style.height = '85vh';
                     img.style.cursor = 'zoom-out';
                     // 滚动到图片顶部
                     body.scrollTop = 0;
