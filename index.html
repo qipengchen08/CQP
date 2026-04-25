@@ -303,6 +303,51 @@
             font-size: 0.9rem;
             color: #64748b;
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        .preview-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .zoom-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #475569;
+            line-height: 1;
+        }
+
+        .zoom-btn:hover {
+            background: #0284c7;
+            color: white;
+            border-color: #0284c7;
+        }
+
+        .zoom-level {
+            font-size: 0.8rem;
+            color: #64748b;
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
         }
 
         .btn-close-preview {
@@ -314,19 +359,33 @@
             border-radius: 6px;
             color: #94a3b8;
             transition: all 0.2s;
+            margin-left: 8px;
         }
 
         .btn-close-preview:hover {
-            background: #f1f5f9;
-            color: #475569;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .preview-body {
+            overflow: auto;
+            max-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            cursor: grab;
+            background: #f8fafc;
+        }
+
+        .preview-body:active {
+            cursor: grabbing;
         }
 
         .preview-image {
-            width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-            background: #f8fafc;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
             display: block;
+            background: #f8fafc;
         }
 
         .preview-pdf {
@@ -397,11 +456,15 @@
                 justify-content: center;
             }
 
-            .preview-pdf {
-                height: 50vh;
+            .preview-title {
+                max-width: 150px;
             }
 
-            .preview-image {
+            .zoom-level {
+                display: none;
+            }
+
+            .preview-body {
                 max-height: 50vh;
             }
         }
@@ -495,7 +558,6 @@
 
         const searchInput = document.getElementById('searchInput');
         const noResults = document.getElementById('noResults');
-
         let currentPreview = null;
 
         function getFileIcon(type) {
@@ -506,12 +568,42 @@
             return 'tag-' + type;
         }
 
+        // 图片缩放功能
+        function setZoom(img, scale) {
+            img.style.transform = `scale(${scale})`;
+        }
+
+        function zoomIn(img) {
+            const current = parseFloat(img.dataset.scale || 1);
+            const next = Math.min(current + 0.25, 3);
+            img.dataset.scale = next;
+            setZoom(img, next);
+            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
+        }
+
+        function zoomOut(img) {
+            const current = parseFloat(img.dataset.scale || 1);
+            const next = Math.max(current - 0.25, 0.5);
+            img.dataset.scale = next;
+            setZoom(img, next);
+            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), next);
+        }
+
+        function zoomReset(img) {
+            img.dataset.scale = 1;
+            setZoom(img, 1);
+            updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), 1);
+        }
+
+        function updateZoomDisplay(el, scale) {
+            el.textContent = Math.round(scale * 100) + '%';
+        }
+
         function togglePreview(file, btnEl) {
-            // 找到预览容器
             const card = btnEl.closest('.file-card');
             let container = card.querySelector('.preview-container');
 
-            // 如果当前预览就是这个，关闭它
+            // 关闭当前预览
             if (currentPreview === card && container && container.classList.contains('show')) {
                 container.classList.remove('show');
                 btnEl.classList.remove('active');
@@ -527,54 +619,71 @@
                 b.textContent = '👁️ 预览';
             });
 
-            // 如果这个卡片没有预览容器，创建一个
+            // 创建预览容器
             if (!container) {
                 container = document.createElement('div');
                 container.className = 'preview-container';
                 card.appendChild(container);
             }
 
-            // 填充预览内容
             if (file.type === 'image') {
                 container.innerHTML = `
                     <div class="preview-header">
-                        <span class="preview-title">📄 ${file.name}</span>
-                        <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
+                        <span class="preview-title">${file.name}</span>
+                        <div class="preview-controls">
+                            <div class="zoom-controls">
+                                <button class="zoom-btn" onclick="zoomOut(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="缩小">−</button>
+                                <span class="zoom-level">100%</span>
+                                <button class="zoom-btn" onclick="zoomIn(this.parentElement.nextElementSibling ? this.parentElement.nextElementSibling : this.closest('.preview-body').querySelector('.preview-image'))" title="放大">+</button>
+                                <button class="zoom-btn" onclick="zoomReset(this.closest('.preview-body').querySelector('.preview-image'))" title="重置" style="font-size:0.75rem;">↺</button>
+                            </div>
+                            <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
+                        </div>
                     </div>
-                    <img src="${file.preview}" alt="${file.name}" class="preview-image" onclick="closePreviewByImg(this)">
+                    <div class="preview-body">
+                        <img src="${file.preview}" alt="${file.name}" class="preview-image" data-scale="1" onclick="zoomReset(this)">
+                    </div>
                 `;
+                // 给缩放按钮绑定正确的图片引用
+                const zoomBtns = container.querySelectorAll('.zoom-btn');
+                const img = container.querySelector('.preview-image');
+                zoomBtns[0].onclick = () => zoomOut(img);
+                zoomBtns[1].onclick = () => zoomIn(img);
+                zoomBtns[2].onclick = () => zoomReset(img);
+
+                // 鼠标滚轮缩放
+                const body = container.querySelector('.preview-body');
+                body.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const img = body.querySelector('.preview-image');
+                    const current = parseFloat(img.dataset.scale || 1);
+                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                    const next = Math.max(0.5, Math.min(3, current + delta));
+                    img.dataset.scale = next;
+                    setZoom(img, next);
+                    updateZoomDisplay(body.querySelector('.zoom-level'), next);
+                });
             } else if (file.type === 'pdf') {
                 container.innerHTML = `
                     <div class="preview-header">
-                        <span class="preview-title">📄 ${file.name}</span>
-                        <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
+                        <span class="preview-title">${file.name}</span>
+                        <div class="preview-controls">
+                            <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
+                        </div>
                     </div>
                     <iframe src="${file.preview}" class="preview-pdf" title="${file.name}"></iframe>
                 `;
             }
 
-            // 显示
             container.classList.add('show');
             btnEl.classList.add('active');
             btnEl.textContent = '✕ 收起';
             currentPreview = card;
-
-            // 滚动到预览区域
             container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function closePreview(btn) {
             const container = btn.closest('.preview-container');
-            const card = container.closest('.file-card');
-            container.classList.remove('show');
-            const btnEl = card.querySelector('.btn-preview');
-            btnEl.classList.remove('active');
-            btnEl.textContent = '👁️ 预览';
-            currentPreview = null;
-        }
-
-        function closePreviewByImg(img) {
-            const container = img.closest('.preview-container');
             const card = container.closest('.file-card');
             container.classList.remove('show');
             const btnEl = card.querySelector('.btn-preview');
@@ -598,7 +707,7 @@
                         </div>
                         <div class="file-actions">
                             <a href="${f.download}" class="btn btn-download" download>⬇️ 下载</a>
-                            <button class="btn btn-preview" onclick="togglePreview(files.find(x => x.name === '${f.name.replace(/'/g, "\\'")}'), this)">👁️ 预览</button>
+                            <button class="btn btn-preview" data-filename="${f.name.replace(/"/g, '&quot;')}" onclick="togglePreview(files.find(x => x.name === '${f.name.replace(/'/g, "\\'")}'), this)">👁️ 预览</button>
                         </div>
                     </div>
                 </div>
@@ -629,13 +738,7 @@
                 }
             });
 
-            if (!hasResults && filter) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-
-            // 重置预览状态
+            noResults.style.display = (!hasResults && filter) ? 'block' : 'none';
             currentPreview = null;
         }
 
