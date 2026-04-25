@@ -263,52 +263,155 @@
             border-color: rgba(2, 132, 199, 0.3);
         }
 
-        /* 预览区域 */
-        .preview-container {
-            margin-top: 20px;
+        /* 主布局：左侧分类 + 右侧预览 */
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            min-height: 70vh;
+        }
+
+        .categories-panel {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            align-content: start;
+        }
+
+        .category-block {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
+            min-height: 200px;
+        }
+
+        .category-block-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(2, 132, 199, 0.1);
+        }
+
+        .category-block-icon {
+            font-size: 1.4rem;
+        }
+
+        .category-block-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .category-block-count {
+            margin-left: auto;
+            background: rgba(2, 132, 199, 0.1);
+            color: #0284c7;
+            padding: 3px 10px;
             border-radius: 12px;
-            overflow: hidden;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .category-files {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .category-file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
             background: #f8fafc;
-            border: 2px dashed rgba(2, 132, 199, 0.2);
-            display: none;
-            position: relative;
         }
 
-        .preview-container.show {
-            display: block;
-            animation: slideDown 0.3s ease;
+        .category-file-item:hover {
+            background: #e0f2fe;
         }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .category-file-item.active {
+            background: #0284c7;
+            color: white;
+        }
+
+        .category-file-item.active .file-item-name {
+            color: white;
+        }
+
+        .category-file-item.active .file-item-type {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .file-item-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .file-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-item-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1e3a5f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-item-type {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* 右侧预览窗口 */
+        .preview-panel {
+            width: 55%;
+            min-width: 400px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
         }
 
         .preview-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
-            background: white;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f8fafc, #e0f2fe);
             border-bottom: 1px solid #e2e8f0;
-            height: 52px;
             flex-shrink: 0;
         }
 
         .preview-title {
-            font-size: 0.9rem;
-            color: #64748b;
-            font-weight: 500;
+            font-size: 0.95rem;
+            color: #1e3a5f;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 300px;
+            max-width: 70%;
         }
 
         .preview-controls {
@@ -320,64 +423,47 @@
         .zoom-controls {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #e0f2fe;
-            padding: 6px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(2, 132, 199, 0.3);
+            gap: 6px;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(2, 132, 199, 0.2);
         }
 
         .zoom-btn {
-            background: white;
-            border: 1px solid #0284c7;
+            background: transparent;
+            border: none;
             border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 1rem;
+            padding: 6px 12px;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
-            color: #0284c7;
+            color: #64748b;
             line-height: 1;
-            font-weight: 700;
         }
 
         .zoom-btn:hover {
-            background: #0284c7;
-            color: white;
-            border-color: #0284c7;
+            background: #e0f2fe;
+            color: #0284c7;
         }
 
         .zoom-level {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #0284c7;
-            min-width: 55px;
+            min-width: 45px;
             text-align: center;
-            font-weight: 800;
-        }
-
-        .preview-footer {
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: center;
-            flex-shrink: 0;
-            height: 52px;
-        }
-
-        .preview-footer.hidden {
-            display: none;
+            font-weight: 600;
         }
 
         .btn-close-preview {
             background: none;
             border: none;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 6px 10px;
             border-radius: 6px;
             color: #94a3b8;
             transition: all 0.2s;
-            margin-left: 8px;
         }
 
         .btn-close-preview:hover {
@@ -386,23 +472,41 @@
         }
 
         .preview-body {
+            flex: 1;
             overflow: hidden;
             background: #f1f5f9;
             position: relative;
-            height: calc(70vh - 52px - 52px);
+            min-height: 400px;
             display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 左侧图片滚动区域 */
+        .preview-empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 60px 40px;
+        }
+
+        .preview-empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .preview-empty-text {
+            font-size: 1rem;
+        }
+
         .preview-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: auto;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
             padding: 20px;
-            background: #f1f5f9;
-            cursor: grab;
             display: flex;
+            align-items: center;
             justify-content: center;
+            cursor: grab;
         }
 
         .preview-scroll-area:active {
@@ -411,6 +515,7 @@
 
         .preview-scroll-area::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
 
         .preview-scroll-area::-webkit-scrollbar-track {
@@ -427,30 +532,67 @@
             background: #64748b;
         }
 
-        /* 右侧缩放控制区域 - 已隐藏，功能移至底部按钮 */
-        .preview-zoom-area {
-            display: none;
-        }
-
         .preview-image-wrapper {
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .preview-image {
-            transition: max-width 0.2s ease, width 0.2s ease;
+            transition: all 0.2s ease;
             display: block;
-            background: #f8fafc;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             max-width: 100%;
-            cursor: zoom-in;
+            max-height: 100%;
         }
 
         .preview-pdf {
             width: 100%;
-            height: 70vh;
+            height: 100%;
+            min-height: 500px;
             border: none;
             display: block;
             background: #f8fafc;
+        }
+
+        .preview-footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .preview-file-info {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-download-preview {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-download-preview:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
         }
 
         .no-results {
@@ -541,49 +683,39 @@
             <span class="search-icon">🔍</span>
         </div>
 
-        <!-- 线上设计 -->
-        <div class="category" id="category-online">
-            <div class="category-title">
-                <span class="category-icon">🌐</span>
-                <span class="category-name">线上设计</span>
-                <span class="category-count" id="count-online">0</span>
-            </div>
-            <div class="file-list" id="list-online"></div>
-        </div>
+        <div class="main-layout">
+            <!-- 左侧分类面板 -->
+            <div class="categories-panel" id="categoriesPanel"></div>
 
-        <!-- 线下设计 -->
-        <div class="category" id="category-offline">
-            <div class="category-title">
-                <span class="category-icon">📦</span>
-                <span class="category-name">线下设计</span>
-                <span class="category-count" id="count-offline">0</span>
+            <!-- 右侧预览窗口 -->
+            <div class="preview-panel" id="previewPanel">
+                <div class="preview-header">
+                    <span class="preview-title" id="previewTitle">文件预览</span>
+                    <div class="preview-controls">
+                        <div class="zoom-controls" id="zoomControls" style="display:none;">
+                            <button class="zoom-btn" id="zoomOutBtn">−</button>
+                            <span class="zoom-level" id="zoomLevel">适应</span>
+                            <button class="zoom-btn" id="zoomInBtn">+</button>
+                            <button class="zoom-btn" id="zoomResetBtn" style="font-size:0.75rem;">↺</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-body" id="previewBody">
+                    <div class="preview-empty" id="previewEmpty">
+                        <div class="preview-empty-icon">🖼️</div>
+                        <p class="preview-empty-text">选择左侧文件查看预览</p>
+                    </div>
+                    <div class="preview-scroll-area" id="previewScrollArea" style="display:none;">
+                        <div class="preview-image-wrapper" id="previewImageWrapper"></div>
+                    </div>
+                </div>
+                <div class="preview-footer" id="previewFooter" style="display:none;">
+                    <span class="preview-file-info" id="previewFileInfo"></span>
+                    <div class="preview-actions">
+                        <a href="#" class="btn-download-preview" id="downloadBtn">⬇️ 下载</a>
+                    </div>
+                </div>
             </div>
-            <div class="file-list" id="list-offline"></div>
-        </div>
-
-        <!-- VI维护 -->
-        <div class="category" id="category-vi">
-            <div class="category-title">
-                <span class="category-icon">🎨</span>
-                <span class="category-name">VI维护</span>
-                <span class="category-count" id="count-vi">0</span>
-            </div>
-            <div class="file-list" id="list-vi"></div>
-        </div>
-
-        <!-- 专项设计 -->
-        <div class="category" id="category-special">
-            <div class="category-title">
-                <span class="category-icon">✨</span>
-                <span class="category-name">专项设计</span>
-                <span class="category-count" id="count-special">0</span>
-            </div>
-            <div class="file-list" id="list-special"></div>
-        </div>
-
-        <div class="no-results" id="noResults" style="display: none;">
-            <div class="no-results-icon">📭</div>
-            <p>没有找到匹配的文件</p>
         </div>
 
         <footer>
@@ -591,8 +723,9 @@
         </footer>
     </div>
 
+    
     <script>
-        const files = [
+const files = [
             {
             "name": "GD28系列灵巧型通用变频器产品手册（中文）",
             "type": "pdf",
@@ -1089,38 +1222,38 @@
             "preview": "https://raw.githubusercontent.com/qipengchen08/CQP/main/jimeng-2026-03-17-9170-%E6%B5%81%E7%95%85%E6%9E%81%E5%B0%91%E9%9D%92%E8%93%9D%E8%89%B2%E6%B8%90%E5%8F%98%E5%85%89%E6%9D%9F%E5%8F%91%E5%85%89%E5%9C%A8%E5%8F%98%E6%8D%A2%E3%80%81%E7%A9%BA%E9%97%B4%E6%84%9F%EF%BC%8C%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA%EF%BC%8C%E5%B8%8C%E6%9C%9B%E6%84%9F%EF%BC%8C%E7%A5%9E%E7%A7%98%E6%84%9F%EF%BC%8C%E5%85%A8%E6%99%AF%E8%A7%86%E8%A7%92%EF%BC%8C%E9%80%8F....png"
             },
         ];
-        const searchInput = document.getElementById('searchInput');
-        const noResults = document.getElementById('noResults');
-        let currentPreview = null;
 
-        function getFileIcon(type) {
-            return type === 'pdf' ? '📘' : type === 'image' ? '🖼️' : '📎';
-        }
 
-        function getTagClass(type) {
-            return 'tag-' + type;
-        }
+        // ===== 分类配置 =====
+        const categories = [
+            { id: 'online',   name: '线上设计', icon: '🌐', key: 'online'   },
+            { id: 'offline',  name: '线下设计', icon: '📦', key: 'offline'  },
+            { id: 'vi',       name: 'VI维护',   icon: '🎨', key: 'vi'       },
+            { id: 'special',  name: '专项设计', icon: '✨', key: 'special'  },
+        ];
 
-        // 图片缩放功能（点击图片放大，+/-按钮控制缩放）
+        let currentFile = null;
+        let currentItem = null;
+
+        // ===== 图片缩放 =====
         function fitImage(img) {
-            const scrollArea = img.closest('.preview-scroll-area');
-            const maxW = scrollArea.clientWidth - 40;
-            const maxH = scrollArea.clientHeight - 40;
+            const scroll = document.getElementById('previewScrollArea');
+            if (!scroll) return 1;
+            const maxW = scroll.clientWidth - 40;
+            const maxH = scroll.clientHeight - 40;
             const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
             const imgH = parseFloat(img.dataset.originalHeight) || img.naturalHeight;
             if (!imgW || !imgH) return 1;
-            const scaleW = maxW / imgW;
-            const scaleH = maxH / imgH;
-            const fitScale = Math.min(scaleW, scaleH, 1);
-            img.dataset.fitScale = fitScale;
-            return fitScale;
+            const scale = Math.min(maxW / imgW, maxH / imgH, 1);
+            img.dataset.fitScale = scale;
+            return scale;
         }
 
         function setZoom(img, level) {
             const fitScale = parseFloat(img.dataset.fitScale) || 1;
             const targetScale = fitScale * level;
-            const scrollArea = img.closest('.preview-scroll-area');
-            const maxW = scrollArea.clientWidth - 40;
+            const scroll = document.getElementById('previewScrollArea');
+            const maxW = scroll.clientWidth - 40;
             const imgW = parseFloat(img.dataset.originalWidth) || img.naturalWidth;
             const displayW = imgW * targetScale;
             img.style.maxWidth = displayW + 'px';
@@ -1128,103 +1261,108 @@
             img.style.height = 'auto';
         }
 
-        function zoomIn(img) {
-            const current = parseFloat(img.dataset.zoomLevel || 2);
-            const next = Math.min(current + 0.25, 4);
-            img.dataset.zoomLevel = next;
-            setZoom(img, next);
+        function updateZoomDisplay(level) {
+            const el = document.getElementById('zoomLevel');
+            if (!el) return;
+            if (level <= 1.5) el.textContent = '适应';
+            else el.textContent = Math.round(level * 100) + '%';
         }
 
-        function zoomOut(img) {
-            const current = parseFloat(img.dataset.zoomLevel || 2);
-            const next = Math.max(current - 0.25, 0.5);
+        document.getElementById('zoomInBtn').addEventListener('click', function() {
+            const img = document.getElementById('previewImageWrapper').querySelector('img');
+            if (!img) return;
+            const cur = parseFloat(img.dataset.zoomLevel || 2);
+            const next = Math.min(cur + 0.25, 4);
             img.dataset.zoomLevel = next;
             setZoom(img, next);
-        }
+            updateZoomDisplay(next);
+        });
 
-        function zoomReset(img) {
+        document.getElementById('zoomOutBtn').addEventListener('click', function() {
+            const img = document.getElementById('previewImageWrapper').querySelector('img');
+            if (!img) return;
+            const cur = parseFloat(img.dataset.zoomLevel || 2);
+            const next = Math.max(cur - 0.25, 0.5);
+            img.dataset.zoomLevel = next;
+            setZoom(img, next);
+            updateZoomDisplay(next);
+        });
+
+        document.getElementById('zoomResetBtn').addEventListener('click', function() {
+            const img = document.getElementById('previewImageWrapper').querySelector('img');
+            if (!img) return;
             img.dataset.zoomLevel = '2';
             fitImage(img);
             setZoom(img, 2);
-        }
+            updateZoomDisplay(2);
+        });
 
-        function updateZoomDisplay(el, level) {
-            if (typeof level === 'string') level = parseFloat(level);
-            if (level <= 1.5) {
-                el.textContent = '适应';
-            } else {
-                el.textContent = Math.round(level * 100) + '%';
-            }
-        }
+        // ===== 拖拽滚动 =====
+        (function() {
+            const scroll = document.getElementById('previewScrollArea');
+            if (!scroll) return;
+            let dragging = false, startY = 0, scrollTop = 0;
 
-        function togglePreview(file, btnEl) {
-            const card = btnEl.closest('.file-card');
-            let container = card.querySelector('.preview-container');
-
-            // 关闭当前预览
-            if (currentPreview === card && container && container.classList.contains('show')) {
-                container.classList.remove('show');
-                btnEl.classList.remove('active');
-                btnEl.textContent = '👁️ 预览';
-                currentPreview = null;
-                return;
-            }
-
-            // 关闭之前的预览
-            document.querySelectorAll('.preview-container.show').forEach(c => c.classList.remove('show'));
-            document.querySelectorAll('.btn-preview.active').forEach(b => {
-                b.classList.remove('active');
-                b.textContent = '👁️ 预览';
+            scroll.addEventListener('mousedown', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+                dragging = true;
+                startY = e.pageY;
+                scrollTop = scroll.scrollTop;
+                scroll.style.cursor = 'grabbing';
             });
 
-            // 创建预览容器
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'preview-container';
-                card.appendChild(container);
-            }
+            document.addEventListener('mousemove', function(e) {
+                if (!dragging) return;
+                e.preventDefault();
+                scroll.scrollTop = scrollTop + (startY - e.pageY);
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (dragging) { dragging = false; scroll.style.cursor = 'grab'; }
+            });
+        })();
+
+        // ===== 点击文件项 =====
+        function selectFile(file, itemEl) {
+            // 移除之前的选中状态
+            document.querySelectorAll('.category-file-item.active').forEach(el => {
+                el.classList.remove('active');
+            });
+            itemEl.classList.add('active');
+            currentFile = file;
+            currentItem = itemEl;
+
+            // 更新预览标题
+            document.getElementById('previewTitle').textContent = file.name;
+
+            // 显示缩放控制（仅图片）
+            const zoomControls = document.getElementById('zoomControls');
+            const footer = document.getElementById('previewFooter');
+            const empty = document.getElementById('previewEmpty');
+            const scrollArea = document.getElementById('previewScrollArea');
+            const wrapper = document.getElementById('previewImageWrapper');
+
+            zoomControls.style.display = file.type === 'image' ? 'flex' : 'none';
+            footer.style.display = 'flex';
+            empty.style.display = 'none';
+            scrollArea.style.display = 'flex';
+
+            // 更新底部信息
+            document.getElementById('previewFileInfo').textContent =
+                file.type.toUpperCase() + ' · ' + file.size + ' · ' + file.date;
+            document.getElementById('downloadBtn').href = file.download;
+            document.getElementById('downloadBtn').download = '';
 
             if (file.type === 'image') {
-                container.innerHTML = `
-                    <div class="preview-header">
-                        <span class="preview-title">${file.name}</span>
-                        <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
-                    </div>
-                    <div class="preview-body">
-                        <div class="preview-scroll-area">
-                            <div class="preview-image-wrapper">
-                                <img src="${file.preview}" alt="${file.name}" class="preview-image">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="preview-footer">
-                        <div class="zoom-controls">
-                            <button class="zoom-btn" title="缩小">🔍−</button>
-                            <span class="zoom-level">100%</span>
-                            <button class="zoom-btn" title="放大">🔍+</button>
-                            <button class="zoom-btn" title="重置" style="font-size:0.75rem;">↺ 适应</button>
-                        </div>
-                    </div>
-                `;
-                const zoomBtns = container.querySelectorAll('.zoom-btn');
-                const img = container.querySelector('.preview-image');
-                const scrollArea = container.querySelector('.preview-scroll-area');
-                const zoomLevel = container.querySelector('.zoom-level');
-
-                // 缩放按钮
-                zoomBtns[0].onclick = () => { zoomOut(img); updateZoomDisplay(zoomLevel, img.dataset.zoomLevel); };
-                zoomBtns[1].onclick = () => { zoomIn(img); updateZoomDisplay(zoomLevel, img.dataset.zoomLevel); };
-                zoomBtns[2].onclick = () => { zoomReset(img); updateZoomDisplay(zoomLevel, '2'); };
-
-                // 图片加载后初始化
+                wrapper.innerHTML = `<img src="${file.preview}" alt="${file.name}" style="max-width:100%;max-height:100%;display:block;cursor:grab;" class="preview-image">`;
+                const img = wrapper.querySelector('img');
                 img.onload = function() {
                     img.dataset.originalWidth = img.naturalWidth;
                     img.dataset.originalHeight = img.naturalHeight;
                     img.dataset.zoomLevel = '2';
                     fitImage(img);
                     setZoom(img, 2);
-                    updateZoomDisplay(zoomLevel, '2');
-                    img.style.cursor = 'grab';
+                    updateZoomDisplay(2);
                     scrollArea.scrollTop = 0;
                 };
                 if (img.complete && img.naturalWidth) {
@@ -1233,141 +1371,79 @@
                     img.dataset.zoomLevel = '2';
                     fitImage(img);
                     setZoom(img, 2);
-                    updateZoomDisplay(zoomLevel, '2');
-                    img.style.cursor = 'grab';
+                    updateZoomDisplay(2);
                     scrollArea.scrollTop = 0;
                 }
-
-                // 左侧区域：拖拽滚动
-                let isDragging = false;
-                let startY = 0;
-                let scrollTop = 0;
-
-                scrollArea.addEventListener('mousedown', (e) => {
-                    isDragging = true;
-                    startY = e.pageY;
-                    scrollTop = scrollArea.scrollTop;
-                    img.style.cursor = 'grabbing';
-                });
-
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    e.preventDefault();
-                    const delta = startY - e.pageY;
-                    scrollArea.scrollTop = scrollTop + delta;
-                });
-
-                document.addEventListener('mouseup', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        img.style.cursor = 'grab';
-                    }
-                });
-
-                // 左侧滚轮也支持滚动（备用）
-                scrollArea.addEventListener('wheel', (e) => {
-                    e.stopPropagation();
-                });
-
-                // 点击图片：切换缩放（从 fit 切换到 100%）
+                // 点击图片切换缩放
                 img.addEventListener('click', function() {
-                    const current = parseFloat(img.dataset.zoomLevel || 2);
-                    if (current >= 2.5) {
-                        // 已经放大，缩小回适应
+                    const cur = parseFloat(img.dataset.zoomLevel || 2);
+                    if (cur >= 2.5) {
                         img.dataset.zoomLevel = '1.5';
                         fitImage(img);
                         setZoom(img, 1.5);
-                        updateZoomDisplay(zoomLevel, 1.5);
+                        updateZoomDisplay(1.5);
                     } else {
-                        // 放大到 100%
                         img.dataset.zoomLevel = '2';
                         setZoom(img, 2);
-                        updateZoomDisplay(zoomLevel, '2');
+                        updateZoomDisplay('2');
                     }
                     scrollArea.scrollTop = 0;
                 });
             } else if (file.type === 'pdf') {
-                container.innerHTML = `
-                    <div class="preview-header">
-                        <span class="preview-title">${file.name}</span>
-                        <div class="preview-controls">
-                            <button class="btn-close-preview" onclick="closePreview(this)">✕</button>
-                        </div>
-                    </div>
-                    <iframe src="${file.preview}" class="preview-pdf" title="${file.name}"></iframe>
-                `;
+                wrapper.innerHTML = `<iframe src="${file.preview}" style="width:100%;height:100%;border:none;background:#f8fafc;" title="${file.name}"></iframe>`;
             }
-
-            container.classList.add('show');
-            btnEl.classList.add('active');
-            btnEl.textContent = '✕ 收起';
-            currentPreview = card;
-            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function closePreview(btn) {
-            const container = btn.closest('.preview-container');
-            const card = container.closest('.file-card');
-            container.classList.remove('show');
-            const btnEl = card.querySelector('.btn-preview');
-            btnEl.classList.remove('active');
-            btnEl.textContent = '👁️ 预览';
-            currentPreview = null;
-        }
-
-        function renderFileCard(f) {
-            return `
-                <div class="file-card">
-                    <div class="file-header">
-                        <div class="file-icon">${getFileIcon(f.type)}</div>
-                        <div class="file-content">
-                            <div class="file-name">${f.name}</div>
-                            <div class="file-meta">
-                                <span class="file-tag ${getTagClass(f.type)}">${f.type.toUpperCase()}</span>
-                                <span class="meta-text">📅 ${f.date}</span>
-                                <span class="meta-text">📦 ${f.size}</span>
-                            </div>
-                        </div>
-                        <div class="file-actions">
-                            <a href="${f.download}" class="btn btn-download" download>⬇️ 下载</a>
-                            <button class="btn btn-preview" data-filename="${f.name.replace(/"/g, '&quot;')}" onclick="togglePreview(files.find(x => x.name === '${f.name.replace(/'/g, "\\'")}'), this)">👁️ 预览</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderCategories(filter = '') {
-            const categories = ['online', 'offline', 'vi', 'special'];
-            let hasResults = false;
+        // ===== 渲染分类面板 =====
+        function renderCategories(filter) {
+            filter = filter.toLowerCase();
+            const panel = document.getElementById('categoriesPanel');
+            panel.innerHTML = '';
 
             categories.forEach(cat => {
-                const filtered = files.filter(f => 
-                    f.category === cat && (
-                        f.name.toLowerCase().includes(filter.toLowerCase())
-                    )
-                );
+                const catFiles = files.filter(f => f.category === cat.key &&
+                    f.name.toLowerCase().includes(filter));
 
-                const listEl = document.getElementById('list-' + cat);
-                const countEl = document.getElementById('count-' + cat);
-
-                if (filtered.length === 0) {
-                    listEl.innerHTML = '<div class="empty-category">暂无文件</div>';
-                    countEl.textContent = '0';
-                } else {
-                    listEl.innerHTML = filtered.map(renderFileCard).join('');
-                    countEl.textContent = filtered.length;
-                    hasResults = true;
-                }
+                const block = document.createElement('div');
+                block.className = 'category-block';
+                block.innerHTML = `
+                    <div class="category-block-title">
+                        <span class="category-block-icon">${cat.icon}</span>
+                        <span class="category-block-name">${cat.name}</span>
+                        <span class="category-block-count">${catFiles.length}</span>
+                    </div>
+                    <div class="category-files">
+                        ${catFiles.length === 0 ? '<div style="color:#94a3b8;font-size:0.85rem;text-align:center;padding:20px;">暂无文件</div>' :
+                          catFiles.map(f => `
+                            <div class="category-file-item" onclick="selectFile(files.find(x => x.name === ${JSON.stringify(f.name)}), this)">
+                                <span class="file-item-icon">${f.type === 'pdf' ? '📘' : '🖼️'}</span>
+                                <div class="file-item-info">
+                                    <div class="file-item-name" title="${f.name}">${f.name}</div>
+                                    <span class="file-item-type tag-${f.type}">${f.type.toUpperCase()}</span>
+                                </div>
+                            </div>
+                          `).join('')}
+                    </div>
+                `;
+                panel.appendChild(block);
             });
 
-            noResults.style.display = (!hasResults && filter) ? 'block' : 'none';
-            currentPreview = null;
+            // 搜索时显示无结果提示
+            const totalCount = categories.reduce((sum, cat) => {
+                return sum + files.filter(f => f.category === cat.key &&
+                    f.name.toLowerCase().includes(filter)).length;
+            }, 0);
+            if (totalCount === 0 && filter) {
+                // 已在分类里处理
+            }
         }
 
-        searchInput.addEventListener('input', (e) => renderCategories(e.target.value));
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            renderCategories(e.target.value);
+        });
 
-        renderCategories();
+        // 初始化
+        renderCategories('');
     </script>
 </body>
 </html>
