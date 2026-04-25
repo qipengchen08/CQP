@@ -396,18 +396,21 @@
         }
 
         .preview-image-wrapper {
-            min-height: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             padding: 20px;
         }
 
         .preview-image {
-            transform-origin: top center;
-            transition: transform 0.2s ease;
+            transition: width 0.2s ease, height 0.2s ease;
             display: block;
             background: #f8fafc;
             max-width: 100%;
+            max-height: calc(70vh - 40px);
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
 
         .preview-pdf {
@@ -590,9 +593,17 @@
             return 'tag-' + type;
         }
 
-        // 图片缩放功能
+        // 图片缩放功能（基于宽高，而非 transform）
         function setZoom(img, scale) {
-            img.style.transform = `scale(${scale})`;
+            const originalWidth = parseFloat(img.dataset.originalWidth);
+            const originalHeight = parseFloat(img.dataset.originalHeight);
+            if (!originalWidth || !originalHeight) return;
+            const maxW = img.closest('.preview-body').clientWidth - 40;
+            const maxH = parseInt(getComputedStyle(img.closest('.preview-body')).maxHeight) - 40;
+            const baseW = Math.min(originalWidth, maxW);
+            const baseH = Math.min(originalHeight, maxH);
+            img.style.width = (baseW * scale) + 'px';
+            img.style.height = 'auto';
         }
 
         function zoomIn(img) {
@@ -613,7 +624,7 @@
 
         function zoomReset(img) {
             img.dataset.scale = 1;
-            setZoom(img, 1);
+            img.style.width = 'auto';
             updateZoomDisplay(img.closest('.preview-body').querySelector('.zoom-level'), 1);
         }
 
@@ -674,6 +685,19 @@
                 zoomBtns[0].onclick = () => zoomOut(img);
                 zoomBtns[1].onclick = () => zoomIn(img);
                 zoomBtns[2].onclick = () => zoomReset(img);
+
+                // 图片加载后记录原始尺寸
+                img.onload = function() {
+                    img.dataset.originalWidth = img.naturalWidth;
+                    img.dataset.originalHeight = img.naturalHeight;
+                    img.dataset.scale = '1';
+                };
+                // 如果图片已经缓存，直接读取
+                if (img.complete && img.naturalWidth) {
+                    img.dataset.originalWidth = img.naturalWidth;
+                    img.dataset.originalHeight = img.naturalHeight;
+                    img.dataset.scale = '1';
+                }
 
                 // 鼠标滚轮缩放
                 const body = container.querySelector('.preview-body');
