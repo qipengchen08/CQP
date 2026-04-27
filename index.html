@@ -178,19 +178,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
+            background: #1e293b;
+            border: 1px solid #334155;
         }
 
         .file-thumb img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
         }
 
-        .file-thumb .thumb-pdf {
-            font-size: 2rem;
+        .file-thumb .thumb-placeholder {
+            font-size: 1.8rem;
         }
 
         .file-content {
@@ -1099,12 +1099,12 @@ function goCategory(catKey) {
         return;
     }
 
-    list.innerHTML = catFiles.map(f => `
-        <div class="file-card">
+    list.innerHTML = catFiles.map((f, i) => `
+        <div class="file-card" data-file-index="${files.indexOf(f)}">
             <div class="file-thumb">
                 ${f.type === 'pdf'
-                    ? '<span class="thumb-pdf">📘</span>'
-                    : `<img src="${f.preview}" alt="${f.name}" loading="lazy" onclick="openPreview(${JSON.stringify(f).replace(/"/g, '&quot;')})" style="cursor:pointer;" title="点击预览">`
+                    ? '<span class="thumb-placeholder">📘</span>'
+                    : `<img src="${f.preview}" alt="${f.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex';" loading="eager"><span class="thumb-placeholder" style="display:none;">🖼️</span>`
                 }
             </div>
             <div class="file-content">
@@ -1116,8 +1116,8 @@ function goCategory(catKey) {
                 </div>
             </div>
             <div class="file-actions">
-                <button class="btn btn-preview" onclick="openPreview(${JSON.stringify(f).replace(/"/g, '&quot;')})">👁️ 预览</button>
-                <a href="${f.download}" class="btn btn-download" target="_blank">⬇️ 下载</a>
+                <button class="btn btn-preview" data-action="preview">👁️ 预览</button>
+                <a href="${f.download}" class="btn btn-download" target="_blank" data-action="download">⬇️ 下载</a>
             </div>
         </div>
     `).join('');
@@ -1156,9 +1156,10 @@ function openPreview(file) {
                 (window.innerHeight * 0.9 - 120) / img.naturalHeight,
                 1
             );
-            img.dataset.zoomLevel = '2';
-            applyZoom(img, 2);
+            img.dataset.zoomLevel = '1';
+            applyZoom(img, 1);
         };
+        img.className = 'preview-content';
         body.appendChild(img);
         currentImg = img;
     } else {
@@ -1199,49 +1200,73 @@ function applyZoom(img, level) {
 
     const zoomEl = document.getElementById('zoomLevel');
     if (zoomEl) {
-        zoomEl.textContent = level <= 1.5 ? '适应' : Math.round(level * 100) + '%';
+        zoomEl.textContent = level <= 1.1 ? '适应' : Math.round(level * 100) + '%';
     }
 }
 
+// 点击按钮放大/缩小
 document.getElementById('zoomInBtn').addEventListener('click', function() {
     if (!currentImg) return;
-    const cur = parseFloat(currentImg.dataset.zoomLevel || 2);
-    const next = Math.min(cur + 0.25, 4);
+    const cur = parseFloat(currentImg.dataset.zoomLevel || 1);
+    const next = Math.min(cur + 0.5, 8);
     currentImg.dataset.zoomLevel = next;
     applyZoom(currentImg, next);
 });
 
 document.getElementById('zoomOutBtn').addEventListener('click', function() {
     if (!currentImg) return;
-    const cur = parseFloat(currentImg.dataset.zoomLevel || 2);
-    const next = Math.max(cur - 0.25, 0.5);
+    const cur = parseFloat(currentImg.dataset.zoomLevel || 1);
+    const next = Math.max(cur - 0.5, 0.5);
     currentImg.dataset.zoomLevel = next;
     applyZoom(currentImg, next);
 });
 
 document.getElementById('zoomResetBtn').addEventListener('click', function() {
     if (!currentImg) return;
-    currentImg.dataset.zoomLevel = '2';
-    applyZoom(currentImg, 2);
+    currentImg.dataset.zoomLevel = '1';
+    applyZoom(currentImg, 1);
+});
+
+// ===== 鼠标滚轮缩放 =====
+document.getElementById('previewBody').addEventListener('wheel', function(e) {
+    if (!currentImg) return;
+    e.preventDefault();
+    const cur = parseFloat(currentImg.dataset.zoomLevel || 1);
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+    const next = Math.max(0.5, Math.min(8, cur + delta));
+    currentImg.dataset.zoomLevel = next;
+    applyZoom(currentImg, next);
+}, { passive: false });
+
+// ===== 双击重置缩放 =====
+document.getElementById('previewBody').addEventListener('dblclick', function(e) {
+    if (!currentImg) return;
+    currentImg.dataset.zoomLevel = '1';
+    applyZoom(currentImg, 1);
 });
 
 // ===== 拖拽滚动弹窗内容 =====
 (function() {
     const body = document.getElementById('previewBody');
-    let dragging = false, startY = 0, scrollTop = 0;
+    let dragging = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0;
 
     body.addEventListener('mousedown', function(e) {
+        // 不拦截按钮和链接
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
         dragging = true;
+        startX = e.pageX;
         startY = e.pageY;
+        scrollLeft = body.scrollLeft;
         scrollTop = body.scrollTop;
         body.style.cursor = 'grabbing';
+        e.preventDefault();
     });
 
-    document.addEventListener('mousemove', function(e) {
+    body.addEventListener('mousemove', function(e) {
         if (!dragging) return;
         e.preventDefault();
-        body.scrollTop = scrollTop + (startY - e.pageY);
+        body.scrollLeft = scrollLeft - (e.pageX - startX);
+        body.scrollTop = scrollTop - (e.pageY - startY);
     });
 
     document.addEventListener('mouseup', function() {
@@ -1251,6 +1276,22 @@ document.getElementById('zoomResetBtn').addEventListener('click', function() {
         }
     });
 })();
+
+// ===== 文件卡片点击事件委托 =====
+document.getElementById('fileList').addEventListener('click', function(e) {
+    const card = e.target.closest('.file-card');
+    if (!card) return;
+
+    const idx = parseInt(card.dataset.fileIndex);
+    const file = files[idx];
+    if (isNaN(idx) || !file) return;
+
+    const action = e.target.dataset.action;
+    if (action === 'download') return; // let <a> handle naturally
+    if (action === 'preview' || e.target.tagName === 'IMG') {
+        openPreview(file);
+    }
+});
 
 // ===== 初始化 =====
 renderHome();
