@@ -388,15 +388,10 @@
             background: #1a1a2e;
             cursor: grab;
             min-height: 0;
-        }
-
-        /* 图片/iframe 的包装容器：负责居中定位 */
-        .preview-scroll-area {
+            /* 直接在这里设置对齐和 padding */
             display: flex;
+            flex-direction: column;
             align-items: flex-start;
-            justify-content: center;
-            min-height: 100%;
-            padding: 12px 20px 20px;
         }
 
         .preview-modal-body:active {
@@ -417,20 +412,24 @@
             border-radius: 4px;
         }
 
-        .preview-scroll-area img {
+        .preview-modal-body img {
             max-width: 100%;
             max-height: calc(90vh - 140px);
             display: block;
             border-radius: 4px;
             box-shadow: 0 8px 40px rgba(0,0,0,0.4);
             transition: all 0.2s ease;
+            margin-top: 12px;
+            padding: 0 20px 20px;
         }
 
-        .preview-scroll-area iframe {
+        .preview-modal-body iframe {
             width: 100%;
             min-height: calc(90vh - 140px);
             border: none;
             background: #f8fafc;
+            margin-top: 12px;
+            padding: 0 20px 20px;
         }
 
         .preview-modal-footer {
@@ -1150,11 +1149,6 @@ function openPreview(file) {
 
     body.innerHTML = '';
 
-    // 用包装容器包裹内容，确保图片/iframe 在 header 下方显示
-    const wrapper = document.createElement('div');
-    wrapper.className = 'preview-scroll-area';
-    body.appendChild(wrapper);
-
     if (file.type === 'image') {
         modalControls.style.display = 'flex';
         const img = document.createElement('img');
@@ -1170,14 +1164,14 @@ function openPreview(file) {
             img.dataset.zoomLevel = '1';
             applyZoom(img, 1);
         };
-        wrapper.appendChild(img);
+        body.appendChild(img);
         currentImg = img;
     } else {
         modalControls.style.display = 'none';
         const iframe = document.createElement('iframe');
         iframe.src = file.preview;
         iframe.title = file.name;
-        wrapper.appendChild(iframe);
+        body.appendChild(iframe);
         currentImg = null;
     }
 
