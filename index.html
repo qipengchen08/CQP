@@ -1166,6 +1166,7 @@ function openPreview(file) {
             img.style.width = (img.naturalWidth * img.dataset.fitScale) + 'px';
             img.style.height = 'auto';
             img.style.maxWidth = 'none';
+            img.style.maxHeight = 'none';
         };
         body.appendChild(img);
         currentImg = img;
@@ -1199,10 +1200,11 @@ document.addEventListener('keydown', function(e) {
 function applyZoom(img, level) {
     const fitScale = parseFloat(img.dataset.fitScale) || 1;
     const targetScale = fitScale * level;
-    // 直接设置 width，绕过 CSS max-width 的限制
+    // 直接设置 width，绕过 CSS max-width/max-height 的限制
     img.style.width = (img.naturalWidth * targetScale) + 'px';
     img.style.height = 'auto';
     img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
 
     const zoomEl = document.getElementById('zoomLevel');
     if (zoomEl) {
