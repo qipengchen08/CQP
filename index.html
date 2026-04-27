@@ -388,10 +388,10 @@
             background: #1a1a2e;
             cursor: grab;
             min-height: 0;
-            /* 直接在这里设置对齐和 padding */
+            /* 水平居中 */
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
         }
 
         .preview-modal-body:active {
@@ -424,12 +424,13 @@
         }
 
         .preview-modal-body iframe {
-            width: 100%;
+            width: calc(100% - 40px);
             min-height: calc(90vh - 140px);
             border: none;
             background: #f8fafc;
             margin-top: 12px;
-            padding: 0 20px 20px;
+            padding: 0;
+            display: block;
         }
 
         .preview-modal-footer {
@@ -1231,9 +1232,11 @@ document.getElementById('zoomResetBtn').addEventListener('click', function() {
     applyZoom(currentImg, 1);
 });
 
-// ===== 鼠标滚轮缩放 =====
+// ===== 鼠标滚轮缩放（仅在图片上）=====
 document.getElementById('previewBody').addEventListener('wheel', function(e) {
     if (!currentImg) return;
+    // 只有鼠标在图片上才缩放，空白区域允许正常滚动
+    if (!currentImg.contains(e.target)) return;
     e.preventDefault();
     const cur = parseFloat(currentImg.dataset.zoomLevel || 1);
     const delta = e.deltaY > 0 ? -0.2 : 0.2;
@@ -1242,9 +1245,10 @@ document.getElementById('previewBody').addEventListener('wheel', function(e) {
     applyZoom(currentImg, next);
 }, { passive: false });
 
-// ===== 双击重置缩放 =====
+// ===== 双击重置缩放（仅在图片上）=====
 document.getElementById('previewBody').addEventListener('dblclick', function(e) {
     if (!currentImg) return;
+    if (!currentImg.contains(e.target)) return;
     currentImg.dataset.zoomLevel = '1';
     applyZoom(currentImg, 1);
 });
