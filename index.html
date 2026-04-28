@@ -26,11 +26,15 @@
 
         /* ===== 首页大标题 ===== */
         .home-header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 60px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        .home-header h1 {
+        .header-left h1 {
             font-size: 3rem;
             font-weight: 800;
             background: linear-gradient(135deg, #0284c7, #0369a1);
@@ -40,12 +44,37 @@
             letter-spacing: -1px;
         }
 
-        .home-header p {
+        .header-left p {
             color: rgba(30, 58, 95, 0.5);
             font-size: 0.9rem;
             letter-spacing: 3px;
             text-transform: uppercase;
             margin-top: 8px;
+        }
+
+        .header-right {
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            width: 280px;
+            padding: 12px 20px;
+            border: 2px solid rgba(2, 132, 199, 0.2);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: white;
+            color: #1e3a5f;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #94a3b8;
         }
 
         /* ===== 首页分类卡片（2×2 网格） ===== */
@@ -546,8 +575,13 @@
         <!-- ===== 首页 ===== -->
         <div id="homePage">
             <div class="home-header">
-                <h1>英威腾设计资源库</h1>
-                <p>Invt Design Resource Center</p>
+                <div class="header-left">
+                    <h1>英威腾设计资源库</h1>
+                    <p>Invt Design Resource Center</p>
+                </div>
+                <div class="header-right">
+                    <input type="text" id="searchInput" placeholder="搜索文件名..." class="search-input">
+                </div>
             </div>
             <div class="home-grid" id="homeGrid"></div>
         </div>
@@ -936,6 +970,67 @@ document.getElementById('fileList').addEventListener('click', function(e) {
         openPreview(file);
     }
 });
+
+// ===== 搜索功能 =====
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const query = e.target.value.trim().toLowerCase();
+    
+    if (query === '') {
+        // 清空搜索时回到首页
+        goHome();
+        return;
+    }
+    
+    // 搜索匹配的文件
+    const results = files.filter(f => f.name.toLowerCase().includes(query));
+    
+    // 切换到列表页显示结果
+    document.getElementById('homePage').style.display = 'none';
+    document.getElementById('listPage').style.display = 'block';
+    document.getElementById('subcatBar').style.display = 'none';
+    
+    document.getElementById('listIcon').textContent = '🔍';
+    document.getElementById('listTitle').textContent = '搜索结果';
+    document.getElementById('listCount').textContent = `（${results.length} 个文件）`;
+    
+    // 渲染搜索结果
+    const list = document.getElementById('fileList');
+    if (results.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:60px;color:#94a3b8;">未找到匹配的文件</div>';
+        return;
+    }
+    
+    list.innerHTML = results.map((f, i) => `
+        <div class="file-card" data-file-index="${files.indexOf(f)}">
+            <div class="file-thumb">
+                ${f.type === 'pdf'
+                    ? '<span class="thumb-placeholder">📘</span>'
+                    : `<img src="${f.preview}" alt="${f.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex';" loading="eager"><span class="thumb-placeholder" style="display:none;">🖼️</span>`
+                }
+            </div>
+            <div class="file-content">
+                <div class="file-name" title="${f.name}">${f.name}</div>
+                <div class="file-meta">
+                    <span class="file-tag tag-${f.type}">${f.type.toUpperCase()}</span>
+                    ${f.subcategory ? `<span class="file-tag tag-subcat">${getSubcatName(f.category, f.subcategory)}</span>` : ''}
+                    <span class="meta-text">${f.size}</span>
+                    <span class="meta-text">${f.date}</span>
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="btn btn-preview" data-action="preview">👁️ 预览</button>
+                <a href="${f.download}" class="btn btn-download" target="_blank" data-action="download">⬇️ 下载</a>
+            </div>
+        </div>
+    `).join('');
+});
+
+// 返回首页时清空搜索框
+function goHome() {
+    document.getElementById('listPage').style.display = 'none';
+    document.getElementById('homePage').style.display = 'block';
+    document.getElementById('searchInput').value = '';
+}
 
 // ===== 初始化 =====
 renderHome();
