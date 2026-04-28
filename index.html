@@ -96,6 +96,50 @@
             color: #0284c7;
         }
 
+        /* ===== 子分类标签栏 ===== */
+        .subcat-bar {
+            margin-bottom: 24px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(2, 132, 199, 0.1);
+        }
+
+        .subcat-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .subcat-btn {
+            padding: 8px 18px;
+            border: 1.5px solid rgba(2, 132, 199, 0.2);
+            border-radius: 20px;
+            background: white;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .subcat-btn:hover {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0284c7;
+        }
+
+        .subcat-btn.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border-color: #0284c7;
+            color: white;
+            font-weight: 600;
+        }
+
+        .tag-subcat {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+
         /* ===== 分类列表页 ===== */
         .list-page {
             display: none;
@@ -526,6 +570,10 @@
                     <span class="list-count" id="listCount"></span>
                 </div>
             </div>
+            <!-- 子分类标签栏 -->
+            <div id="subcatBar" class="subcat-bar" style="display:none;">
+                <div class="subcat-list" id="subcatList"></div>
+            </div>
             <div class="file-list" id="fileList"></div>
         </div>
 
@@ -561,10 +609,51 @@
 const files = [];
 
 const categories = [
-    { id: 'icon',       name: '图标类素材',     icon: '🔷', key: 'icon'       },
-    { id: 'background', name: '背景类素材',     icon: '🖼️', key: 'background' },
-    { id: 'graphic',    name: '图形元素素材',   icon: '✒️', key: 'graphic'    },
-    { id: 'font',       name: '字体与规范素材', icon: '📝', key: 'font'       },
+    { 
+        id: 'icon',       
+        name: '图标类素材',     
+        icon: '🔷', 
+        key: 'icon',
+        subcategories: [
+            { id: 'brand', name: '品牌核心图标' },
+            { id: 'function', name: '功能图标' },
+            { id: 'compliance', name: '合规标识' },
+            { id: 'multilang', name: '多语种图标' }
+        ]
+    },
+    { 
+        id: 'background', 
+        name: '背景类素材',     
+        icon: '🖼️', 
+        key: 'background',
+        subcategories: [
+            { id: 'company', name: '公司图' },
+            { id: 'industry', name: '行业图' },
+            { id: 'poster', name: '海报背景' }
+        ]
+    },
+    { 
+        id: 'graphic',    
+        name: '图形元素素材',   
+        icon: '✒️', 
+        key: 'graphic',
+        subcategories: [
+            { id: 'decoration', name: '装饰元素' },
+            { id: 'dataviz', name: '数据可视化' },
+            { id: 'layout', name: '排版辅助' }
+        ]
+    },
+    { 
+        id: 'font',       
+        name: '字体与规范素材', 
+        icon: '📝', 
+        key: 'font',
+        subcategories: [
+            { id: 'fontlib', name: '品牌字体库' },
+            { id: 'vi', name: 'VI规范文件' },
+            { id: 'template', name: '模板源文件' }
+        ]
+    }
 ];
 
 // ===== 渲染首页 =====
@@ -592,6 +681,46 @@ function goCategory(catKey) {
 
     document.getElementById('listIcon').textContent = cat.icon;
     document.getElementById('listTitle').textContent = cat.name;
+
+    // 渲染子分类标签
+    const subcatBar = document.getElementById('subcatBar');
+    const subcatList = document.getElementById('subcatList');
+    if (cat.subcategories && cat.subcategories.length > 0) {
+        subcatBar.style.display = 'block';
+        subcatList.innerHTML = `
+            <button class="subcat-btn active" data-subcat="all">全部</button>
+            ${cat.subcategories.map(sc => `
+                <button class="subcat-btn" data-subcat="${sc.id}">${sc.name}</button>
+            `).join('')}
+        `;
+    } else {
+        subcatBar.style.display = 'none';
+    }
+
+    // 渲染文件列表
+    renderFileList(catKey, 'all');
+
+    // 子分类按钮点击事件
+    subcatList.onclick = function(e) {
+        if (e.target.classList.contains('subcat-btn')) {
+            document.querySelectorAll('.subcat-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            const subcat = e.target.dataset.subcat;
+            renderFileList(catKey, subcat);
+        }
+    };
+}
+
+// ===== 渲染文件列表（支持子分类筛选）=====
+function renderFileList(catKey, subcat) {
+    const cat = categories.find(c => c.key === catKey);
+    let catFiles = files.filter(f => f.category === catKey);
+    
+    // 子分类筛选
+    if (subcat !== 'all') {
+        catFiles = catFiles.filter(f => f.subcategory === subcat);
+    }
+
     document.getElementById('listCount').textContent = `（${catFiles.length} 个文件）`;
 
     const list = document.getElementById('fileList');
@@ -612,6 +741,7 @@ function goCategory(catKey) {
                 <div class="file-name" title="${f.name}">${f.name}</div>
                 <div class="file-meta">
                     <span class="file-tag tag-${f.type}">${f.type.toUpperCase()}</span>
+                    ${f.subcategory ? `<span class="file-tag tag-subcat">${getSubcatName(catKey, f.subcategory)}</span>` : ''}
                     <span class="meta-text">${f.size}</span>
                     <span class="meta-text">${f.date}</span>
                 </div>
@@ -622,6 +752,14 @@ function goCategory(catKey) {
             </div>
         </div>
     `).join('');
+}
+
+// ===== 获取子分类名称 =====
+function getSubcatName(catKey, subcatId) {
+    const cat = categories.find(c => c.key === catKey);
+    if (!cat || !cat.subcategories) return '';
+    const subcat = cat.subcategories.find(s => s.id === subcatId);
+    return subcat ? subcat.name : '';
 }
 
 // ===== 返回首页 =====
