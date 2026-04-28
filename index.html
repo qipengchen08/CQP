@@ -75,8 +75,10 @@
         }
 
         .home-card-icon {
-            font-size: 3rem;
+            width: 80px;
+            height: 80px;
             margin-bottom: 16px;
+            object-fit: contain;
         }
 
         .home-card-name {
@@ -612,7 +614,7 @@ const categories = [
     { 
         id: 'icon',       
         name: '图标类素材',     
-        icon: '🔷', 
+        icon: 'icons/icon-category.png', 
         key: 'icon',
         subcategories: [
             { id: 'brand', name: '品牌核心图标' },
@@ -624,7 +626,7 @@ const categories = [
     { 
         id: 'background', 
         name: '背景类素材',     
-        icon: '🖼️', 
+        icon: 'icons/bg-category.png', 
         key: 'background',
         subcategories: [
             { id: 'company', name: '公司图' },
@@ -635,7 +637,7 @@ const categories = [
     { 
         id: 'graphic',    
         name: '图形元素素材',   
-        icon: '✒️', 
+        icon: 'icons/graphic-category.png', 
         key: 'graphic',
         subcategories: [
             { id: 'decoration', name: '装饰元素' },
@@ -646,7 +648,7 @@ const categories = [
     { 
         id: 'font',       
         name: '字体与规范素材', 
-        icon: '📝', 
+        icon: 'icons/font-category.png', 
         key: 'font',
         subcategories: [
             { id: 'fontlib', name: '品牌字体库' },
@@ -661,9 +663,13 @@ function renderHome() {
     const grid = document.getElementById('homeGrid');
     grid.innerHTML = categories.map(cat => {
         const count = files.filter(f => f.category === cat.key).length;
+        const isImage = cat.icon.includes('.');
         return `
             <div class="home-card" onclick="goCategory('${cat.key}')">
-                <div class="home-card-icon">${cat.icon}</div>
+                ${isImage 
+                    ? `<img class="home-card-icon" src="${cat.icon}" alt="${cat.name}">`
+                    : `<div class="home-card-icon">${cat.icon}</div>`
+                }
                 <div class="home-card-name">${cat.name}</div>
                 <div class="home-card-count"><span>${count}</span> 个文件</div>
             </div>
@@ -679,7 +685,14 @@ function goCategory(catKey) {
     document.getElementById('homePage').style.display = 'none';
     document.getElementById('listPage').style.display = 'block';
 
-    document.getElementById('listIcon').textContent = cat.icon;
+    // 处理列表页图标（支持图片）
+    const listIconEl = document.getElementById('listIcon');
+    const isImage = cat.icon.includes('.');
+    if (isImage) {
+        listIconEl.innerHTML = `<img src="${cat.icon}" alt="${cat.name}" style="width:32px;height:32px;object-fit:contain;">`;
+    } else {
+        listIconEl.textContent = cat.icon;
+    }
     document.getElementById('listTitle').textContent = cat.name;
 
     // 渲染子分类标签
